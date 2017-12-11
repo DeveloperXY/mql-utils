@@ -2,47 +2,84 @@ package org.mql.processors;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
+import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * @author Mohammed Aouf ZOUAG, on 12/11/2017
  */
-@SupportedAnnotationTypes("org.mql.bestpractices.Model")
+@SupportedAnnotationTypes({"org.mql.bestpractices.Model", "org.mql.bestpractices.CheckForBestPractices"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class BestPracticesProcessor extends AbstractProcessor {
 
     private static final String MODELS_PACKAGE_NAME = "models";
 
+    private Elements elementUtils;
+    private TypeElement bestPracticesElement;
     private TypeElement modelElement;
     /**
      * A flag indicating whether this processor had already processed annotations in a previous round.
      */
-    private boolean hasProcessedModels = false;
+    private boolean hasProcessedAnnotations = false;
+    private boolean bestPracticesEnabled = false;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
+        elementUtils = processingEnv.getElementUtils();
         modelElement = processingEnv.getElementUtils().getTypeElement("org.mql.bestpractices.Model");
+        bestPracticesElement = processingEnv.getElementUtils()
+                .getTypeElement("org.mql.bestpractices.CheckForBestPractices");
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-
-        boolean allModelsAreWellPackaged = roundEnv.getElementsAnnotatedWith(modelElement)
+        roundEnv.getElementsAnnotatedWith(bestPracticesElement)
                 .stream()
-                .map(element -> ((TypeElement) element))
-                .allMatch(this::isModelClassWellPackaged);
+                .findAny()
+                .ifPresent(annotatedPackage -> {
+                    PackageElement packageElement = ((PackageElement) annotatedPackage);
 
-        if (!hasProcessedModels) {
-            if (allModelsAreWellPackaged) {
-                processingEnv.getMessager().printMessage(
-                        Diagnostic.Kind.NOTE, "All model classes are well-packaged.");
-            }
+                    AnnotationMirror annotation = packageElement.getAnnotationMirrors()
+                            .stream()
+                            .filter(annotationMirror -> annotationMirror.getAnnotationType()
+                                    .asElement().equals(bestPracticesElement))
+                            .findAny()
+                            .get();
 
-            hasProcessedModels = true;
-        }
+                    Map<? extends ExecutableElement, ? extends AnnotationValue> annotationMap =
+                            elementUtils.getElementValuesWithDefaults(annotation);
+
+                    bestPracticesEnabled = Boolean.valueOf(getAnnotationAttributeValue(
+                            "enabled", annotationMap));
+
+                    if (bestPracticesEnabled) {
+                        processingEnv.getMessager().printMessage(
+                                Diagnostic.Kind.NOTE, "MQL: Best practices mode is enabled.");
+
+                        boolean allModelsAreWellPackaged = roundEnv.getElementsAnnotatedWith(modelElement)
+                                .stream()
+                                .map(element -> ((TypeElement) element))
+                                .allMatch(this::isModelClassWellPackaged);
+
+                        if (!hasProcessedAnnotations) {
+                            if (allModelsAreWellPackaged) {
+                                processingEnv.getMessager().printMessage(
+                                        Diagnostic.Kind.NOTE, "All model classes are well-packaged.");
+                            }
+
+                        }
+                    }
+                    else {
+                        processingEnv.getMessager().printMessage(
+                                Diagnostic.Kind.NOTE, "MQL: Best practices mode is disabled.");
+                    }
+
+                    hasProcessedAnnotations = true;
+                });
 
         return false;
     }
@@ -87,5 +124,25 @@ public class BestPracticesProcessor extends AbstractProcessor {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, errorMessage, annotatedClass);
 
         return isWellPackaged;
+    }
+
+    /**
+     * Retrieves the value of an attribute from the map of the annotation's values.
+     *
+     * @param attributeName the name of the attribute to lookup
+     * @param annotationMap the map that holds the attributes & their associated values
+     * @return the value of the requested attribute
+     */
+    private String getAnnotationAttributeValue(String attributeName,
+                                               Map<? extends ExecutableElement, ? extends AnnotationValue> annotationMap) {
+        Set<? extends ExecutableElement> annotationAttributes = annotationMap.keySet();
+        ExecutableElement attribute = annotationAttributes.stream()
+                .filter(attr -> attr.getSimpleName().toString().equalsIgnoreCase(attributeName))
+                .findAny()
+                .get();
+
+        return annotationMap.get(attribute)
+                .getValue()
+                .toString();
     }
 }
