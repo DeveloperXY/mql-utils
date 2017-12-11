@@ -24,7 +24,7 @@ import java.util.Set;
 /**
  * @author Mohammed Aouf ZOUAG, on 12/11/2017
  */
-@SupportedAnnotationTypes("org.mql.jee.annotations.Action")
+@SupportedAnnotationTypes("org.mql.jee.annotations.ActionRequired")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class ActionProcessor extends AbstractProcessor {
 
@@ -51,7 +51,7 @@ public class ActionProcessor extends AbstractProcessor {
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         elementUtils = processingEnv.getElementUtils();
-        actionElement = processingEnv.getElementUtils().getTypeElement("org.mql.jee.annotations.Action");
+        actionElement = processingEnv.getElementUtils().getTypeElement("org.mql.jee.annotations.ActionRequired");
     }
 
     @Override
