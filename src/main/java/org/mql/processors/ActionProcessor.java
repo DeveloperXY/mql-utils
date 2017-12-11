@@ -32,6 +32,7 @@ public class ActionProcessor extends AbstractProcessor {
      * The qualified name of the package under which the generated action classes will reside.
      */
     public static final String DEFAULT_ACTION_PACKAGE_NAME = "org.mql.generated.actions";
+    public static final String DEFAULT_ACTION_NAME_SUFFIX = "Action";
 
     /**
      * The name of the velocity template used for the action classes to be generated.
@@ -69,7 +70,13 @@ public class ActionProcessor extends AbstractProcessor {
                             elementUtils.getElementValuesWithDefaults(annotation);
 
                     String actionName = getAnnotationAttributeValue("value", annotationMap);
-                    // TODO: check when actionName is empty and use a default name
+
+                    if (actionName.isEmpty()) {
+                        // No name was provided, use a default one
+                        String modelClassSimpleName = annotatedClass.getSimpleName().toString();
+                        actionName = modelClassSimpleName + DEFAULT_ACTION_NAME_SUFFIX;
+                    }
+
                     String defaultResult = getAnnotationAttributeValue("defaultResult", annotationMap);
                     GeneratedAction actionToBeGenerated = new GeneratedAction(
                             actionName, defaultResult, DEFAULT_ACTION_PACKAGE_NAME);
