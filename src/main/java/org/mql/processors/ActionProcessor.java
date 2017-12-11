@@ -5,6 +5,9 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import java.util.Set;
 
+/**
+ * @author Mohammed Aouf ZOUAG, on 12/11/2017
+ */
 @SupportedAnnotationTypes("org.mql.jee.annotations.Action")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class ActionProcessor extends AbstractProcessor {
