@@ -8,7 +8,7 @@ import java.lang.annotation.*;
 @Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Action {
+public @interface ActionRequired {
     /**
      * @return the name of the corresponding action class to be generated.
      */
