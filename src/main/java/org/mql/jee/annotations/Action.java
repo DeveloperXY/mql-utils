@@ -13,4 +13,9 @@ public @interface Action {
      * @return the name of the corresponding action class to be generated.
      */
     String value() default "";
+
+    /**
+     * @return the default result of the invoked action method.
+     */
+    String defaultResult() default "ok";
 }

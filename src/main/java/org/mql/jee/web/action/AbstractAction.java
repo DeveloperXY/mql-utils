@@ -5,24 +5,24 @@ package org.mql.jee.web.action;
  *
  * @author Mohammed Aouf ZOUAG, on 12/11/2017
  */
-public abstract class AbstractAction<T> implements BasicAction<T> {
+public abstract class AbstractAction implements BasicAction<String> {
     @Override
-    public T add() {
+    public String add() {
         throw new UnsupportedOperationException("AbstractAction.add() isn't supported.");
     }
 
     @Override
-    public T update() {
+    public String update() {
         throw new UnsupportedOperationException("AbstractAction.update() isn't supported.");
     }
 
     @Override
-    public T delete() {
+    public String delete() {
         throw new UnsupportedOperationException("AbstractAction.delete() isn't supported.");
     }
 
     @Override
-    public T list() {
+    public String list() {
         throw new UnsupportedOperationException("AbstractAction.list() isn't supported.");
     }
 }
