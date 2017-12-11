@@ -3,12 +3,18 @@ version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
 
+archivesBaseName = "mql-utils"
+
 sourceCompatibility = 1.8
+
+tasks.withType(Jar) {
+    destinationDir = file("C:\\Users\\Moham\\IdeaProjects\\MqlUtilsPlayground\\libs")
+}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile 'junit:junit:4.12'
 }
