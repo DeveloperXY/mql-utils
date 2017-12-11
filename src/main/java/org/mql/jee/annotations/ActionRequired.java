@@ -3,6 +3,8 @@ package org.mql.jee.annotations;
 import java.lang.annotation.*;
 
 /**
+ * Indicates that the class annotated with it is requesting the generation of a corresponding action class.
+ *
  * @author Mohammed Aouf ZOUAG, on 12/11/2017
  */
 @Documented
