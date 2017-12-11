@@ -1,0 +1,30 @@
+package ${packageName};
+
+import org.mql.jee.web.action.AbstractAction;
+
+public class ${actionClassName} extends AbstractAction {
+    @Override
+    public String add() {
+        return "${actionResult}";
+    }
+
+    @Override
+    public String update() {
+        return "${actionResult}";
+    }
+
+    @Override
+    public String delete() {
+        return "${actionResult}";
+    }
+
+    @Override
+    public String list() {
+        return "${actionResult}";
+    }
+
+    @Override
+    public String toString() {
+        return "${actionClassName}'s toString";
+    }
+}

@@ -1,5 +1,8 @@
 package org.mql.processors;
 
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
 import org.mql.processors.models.GeneratedAction;
 
 import javax.annotation.processing.*;
@@ -9,7 +12,13 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
+import java.io.IOException;
+import java.io.Writer;
+import java.net.URL;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -18,6 +27,21 @@ import java.util.Set;
 @SupportedAnnotationTypes("org.mql.jee.annotations.Action")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class ActionProcessor extends AbstractProcessor {
+
+    /**
+     * The qualified name of the package under which the generated action classes will reside.
+     */
+    public static final String DEFAULT_ACTION_PACKAGE_NAME = "org.mql.generated.actions";
+
+    /**
+     * The name of the velocity template used for the action classes to be generated.
+     */
+    public static final String VELOCITY_ACTION_CLASS_TEMPLATE_NAME = "actionclass.vm";
+    public static final String VELOCITY_PROPERTIES_FILE_NAME = "velocity.properties";
+
+    public static final String VELOCITY_KEY_FOR_PACKAGE_NAME = "packageName";
+    public static final String VELOCITY_KEY_FOR_ACTION_CLASS_NAME = "actionClassName";
+    public static final String VELOCITY_KEY_FOR_ACTION_RESULT = "actionResult";
 
     private Elements elementUtils;
     private TypeElement actionElement;
@@ -45,16 +69,24 @@ public class ActionProcessor extends AbstractProcessor {
                             elementUtils.getElementValuesWithDefaults(annotation);
 
                     String actionName = getAnnotationAttributeValue("value", annotationMap);
+                    // TODO: check when actionName is empty and use a default name
                     String defaultResult = getAnnotationAttributeValue("defaultResult", annotationMap);
-                    GeneratedAction actionToBeGenerated = new GeneratedAction(actionName, defaultResult);
+                    GeneratedAction actionToBeGenerated = new GeneratedAction(
+                            actionName, defaultResult, DEFAULT_ACTION_PACKAGE_NAME);
 
-                    System.out.println(String.format("Generating action '%s' with result '%s'",
-                            actionToBeGenerated.getName(), actionToBeGenerated.getResult()));
+                    generateAction(actionToBeGenerated);
                 });
 
         return false;
     }
 
+    /**
+     * Retrieves the value of an attribute from the map of the annotation's values.
+     *
+     * @param attributeName the name of the attribute to lookup
+     * @param annotationMap the map that holds the attributes & their associated values
+     * @return the value of the requested attribute
+     */
     private String getAnnotationAttributeValue(String attributeName,
                                                Map<? extends ExecutableElement, ? extends AnnotationValue> annotationMap) {
         Set<? extends ExecutableElement> annotationAttributes = annotationMap.keySet();
@@ -66,5 +98,41 @@ public class ActionProcessor extends AbstractProcessor {
         return annotationMap.get(attribute)
                 .getValue()
                 .toString();
+    }
+
+    /**
+     * Creates a Java source file corresponding to the passed in action.
+     *
+     * @param action to be generated
+     */
+    private void generateAction(GeneratedAction action) {
+        try {
+            Properties properties = new Properties();
+            URL url = getClass().getClassLoader().getResource(VELOCITY_PROPERTIES_FILE_NAME);
+            properties.load(url.openStream());
+
+            VelocityEngine velocityEngine = new VelocityEngine(properties);
+            velocityEngine.init();
+
+            VelocityContext velocityContext = new VelocityContext();
+            velocityContext.put(VELOCITY_KEY_FOR_PACKAGE_NAME, action.getQualifiedPackageName());
+            velocityContext.put(VELOCITY_KEY_FOR_ACTION_CLASS_NAME, action.getName());
+            velocityContext.put(VELOCITY_KEY_FOR_ACTION_RESULT, action.getResult());
+
+            Template velocityTemplate = velocityEngine.getTemplate(VELOCITY_ACTION_CLASS_TEMPLATE_NAME);
+
+            JavaFileObject jfo = processingEnv.getFiler().createSourceFile(action.getName());
+            processingEnv.getMessager().printMessage(
+                    Diagnostic.Kind.NOTE, "creating source file: " + jfo.toUri());
+
+            Writer writer = jfo.openWriter();
+            processingEnv.getMessager().printMessage(
+                    Diagnostic.Kind.NOTE, "applying velocity template: " + velocityTemplate.getName());
+            velocityTemplate.merge(velocityContext, writer);
+            writer.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
