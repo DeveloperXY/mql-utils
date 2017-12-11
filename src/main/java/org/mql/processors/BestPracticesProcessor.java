@@ -16,6 +16,9 @@ public class BestPracticesProcessor extends AbstractProcessor {
     private static final String MODELS_PACKAGE_NAME = "models";
 
     private TypeElement modelElement;
+    /**
+     * A flag indicating whether this processor had already processed annotations in a previous round.
+     */
     private boolean hasProcessedModels = false;
 
     @Override
@@ -26,12 +29,18 @@ public class BestPracticesProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        if (!hasProcessedModels && roundEnv.getElementsAnnotatedWith(modelElement)
+
+        boolean allModelsAreWellPackaged = roundEnv.getElementsAnnotatedWith(modelElement)
                 .stream()
                 .map(element -> ((TypeElement) element))
-                .map(this::isModelClassWellPackaged)
-                .noneMatch(status -> false)) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "All model classes are well-packaged.");
+                .allMatch(this::isModelClassWellPackaged);
+
+        if (!hasProcessedModels) {
+            if (allModelsAreWellPackaged) {
+                processingEnv.getMessager().printMessage(
+                        Diagnostic.Kind.NOTE, "All model classes are well-packaged.");
+            }
+
             hasProcessedModels = true;
         }
 
