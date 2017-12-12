@@ -16,8 +16,7 @@ import java.util.Set;
  */
 @SupportedAnnotationTypes({
         "org.mql.bestpractices.CheckForBestPractices",
-        "org.mql.bestpractices.Model",
-        "org.mql.bestpractices.Capitalized"
+        "org.mql.bestpractices.Model"
 })
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class BestPracticesProcessor extends AbstractProcessor {
@@ -27,7 +26,6 @@ public class BestPracticesProcessor extends AbstractProcessor {
     private Elements elementUtils;
     private TypeElement bestPracticesElement;
     private TypeElement modelElement;
-    private TypeElement capitalizedElement;
     /**
      * A flag indicating whether this processor had already processed annotations in a previous round.
      */
@@ -40,7 +38,6 @@ public class BestPracticesProcessor extends AbstractProcessor {
 
         bestPracticesElement = elementUtils.getTypeElement("org.mql.bestpractices.CheckForBestPractices");
         modelElement = elementUtils.getTypeElement("org.mql.bestpractices.Model");
-        capitalizedElement = elementUtils.getTypeElement("org.mql.bestpractices.Capitalized");
     }
 
     @Override
@@ -63,6 +60,8 @@ public class BestPracticesProcessor extends AbstractProcessor {
                 if (!hasProcessedAnnotations) {
                     processingEnv.getMessager().printMessage(
                             Diagnostic.Kind.NOTE, "MQL: Best practices mode is disabled.");
+
+                    hasProcessedAnnotations = true;
                 }
             }
         }
