@@ -44,6 +44,10 @@ public class ActionProcessor extends AbstractProcessor {
     public static final String VELOCITY_KEY_FOR_PACKAGE_NAME = "packageName";
     public static final String VELOCITY_KEY_FOR_ACTION_CLASS_NAME = "actionClassName";
     public static final String VELOCITY_KEY_FOR_ACTION_RESULT = "actionResult";
+    public static final String VELOCITY_KEY_FOR_MODEL_CLASS_NAME = "modelClassName";
+    public static final String VELOCITY_KEY_FOR_MODEL_NAME = "modelName";
+    public static final String VELOCITY_KEY_FOR_MODEL_LIST_NAME = "modelListName";
+    public static final String VELOCITY_KEY_FOR_MODEL_QUALIFIED_CLASS_NAME = "modelQualifiedClassName";
 
     private Elements elementUtils;
     private TypeElement actionElement;
@@ -61,6 +65,9 @@ public class ActionProcessor extends AbstractProcessor {
                 .stream()
                 .map(element -> ((TypeElement) element))
                 .forEach(annotatedClass -> {
+                    String modelClassSimpleName = annotatedClass.getSimpleName().toString();
+                    String modelQualifiedClassName = annotatedClass.getQualifiedName().toString();
+
                     AnnotationMirror annotation = annotatedClass.getAnnotationMirrors()
                             .stream()
                             .filter(annotationMirror -> annotationMirror.getAnnotationType().asElement().equals(actionElement))
@@ -74,13 +81,12 @@ public class ActionProcessor extends AbstractProcessor {
 
                     if (actionName.isEmpty()) {
                         // No name was provided, use a default one
-                        String modelClassSimpleName = annotatedClass.getSimpleName().toString();
                         actionName = modelClassSimpleName + DEFAULT_ACTION_NAME_SUFFIX;
                     }
 
                     String defaultResult = AnnotationUtils.getAttributeValue("defaultResult", annotationMap);
-                    GeneratedAction actionToBeGenerated = new GeneratedAction(
-                            actionName, defaultResult, DEFAULT_ACTION_PACKAGE_NAME);
+                    GeneratedAction actionToBeGenerated = new GeneratedAction(actionName, defaultResult,
+                            DEFAULT_ACTION_PACKAGE_NAME, modelClassSimpleName, modelQualifiedClassName);
 
                     generateAction(actionToBeGenerated);
                 });
@@ -104,12 +110,16 @@ public class ActionProcessor extends AbstractProcessor {
 
             VelocityContext velocityContext = new VelocityContext();
             velocityContext.put(VELOCITY_KEY_FOR_PACKAGE_NAME, action.getQualifiedPackageName());
-            velocityContext.put(VELOCITY_KEY_FOR_ACTION_CLASS_NAME, action.getName());
-            velocityContext.put(VELOCITY_KEY_FOR_ACTION_RESULT, action.getResult());
+            velocityContext.put(VELOCITY_KEY_FOR_ACTION_CLASS_NAME, action.getActionName());
+            velocityContext.put(VELOCITY_KEY_FOR_ACTION_RESULT, action.getActionResult());
+            velocityContext.put(VELOCITY_KEY_FOR_MODEL_CLASS_NAME, action.getModelClassName());
+            velocityContext.put(VELOCITY_KEY_FOR_MODEL_NAME, action.getModelName());
+            velocityContext.put(VELOCITY_KEY_FOR_MODEL_LIST_NAME, action.getModelListName());
+            velocityContext.put(VELOCITY_KEY_FOR_MODEL_QUALIFIED_CLASS_NAME, action.getModelQualifiedClassName());
 
             Template velocityTemplate = velocityEngine.getTemplate(VELOCITY_ACTION_CLASS_TEMPLATE_NAME);
 
-            JavaFileObject jfo = processingEnv.getFiler().createSourceFile(action.getName());
+            JavaFileObject jfo = processingEnv.getFiler().createSourceFile(action.getActionName());
             processingEnv.getMessager().printMessage(
                     Diagnostic.Kind.NOTE, "creating source file: " + jfo.toUri());
 

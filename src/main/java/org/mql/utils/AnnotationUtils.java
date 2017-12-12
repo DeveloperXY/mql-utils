@@ -13,7 +13,7 @@ public class AnnotationUtils {
      * Retrieves the value of an attribute from the map of the annotation's values.
      *
      * @param attributeName the name of the attribute to lookup
-     * @param annotationMap the map that holds the attributes & their associated values
+     * @param annotationMap the map that holds the attributes and their associated values
      * @return the value of the requested attribute
      */
     public static String getAttributeValue(String attributeName,

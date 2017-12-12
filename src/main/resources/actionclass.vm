@@ -1,8 +1,15 @@
 package ${packageName};
 
 import org.mql.jee.web.action.AbstractAction;
+import ${modelQualifiedClassName};
+
+import java.util.List;
 
 public class ${actionClassName} extends AbstractAction {
+
+    private ${modelClassName} ${modelName};
+    private List<${modelClassName}> ${modelListName};
+
     @Override
     public String add() {
         return "${actionResult}";
@@ -21,6 +28,22 @@ public class ${actionClassName} extends AbstractAction {
     @Override
     public String list() {
         return "${actionResult}";
+    }
+
+    public ${modelClassName} get${modelClassName}() {
+        return ${modelName};
+    }
+
+    public void set${modelClassName}(${modelClassName} ${modelName}) {
+        this.${modelName} = ${modelName};
+    }
+
+    public List<${modelClassName}> get${modelClassName}List() {
+        return ${modelListName};
+    }
+
+    public void set${modelClassName}List(List<${modelClassName}> ${modelListName}) {
+        this.${modelListName} = ${modelListName};
     }
 
     @Override
