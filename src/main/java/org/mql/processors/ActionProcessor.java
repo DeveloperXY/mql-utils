@@ -4,6 +4,7 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.mql.processors.models.GeneratedAction;
+import org.mql.utils.AnnotationUtils;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -69,7 +70,7 @@ public class ActionProcessor extends AbstractProcessor {
                     Map<? extends ExecutableElement, ? extends AnnotationValue> annotationMap =
                             elementUtils.getElementValuesWithDefaults(annotation);
 
-                    String actionName = getAnnotationAttributeValue("value", annotationMap);
+                    String actionName = AnnotationUtils.getAttributeValue("value", annotationMap);
 
                     if (actionName.isEmpty()) {
                         // No name was provided, use a default one
@@ -77,7 +78,7 @@ public class ActionProcessor extends AbstractProcessor {
                         actionName = modelClassSimpleName + DEFAULT_ACTION_NAME_SUFFIX;
                     }
 
-                    String defaultResult = getAnnotationAttributeValue("defaultResult", annotationMap);
+                    String defaultResult = AnnotationUtils.getAttributeValue("defaultResult", annotationMap);
                     GeneratedAction actionToBeGenerated = new GeneratedAction(
                             actionName, defaultResult, DEFAULT_ACTION_PACKAGE_NAME);
 
@@ -85,26 +86,6 @@ public class ActionProcessor extends AbstractProcessor {
                 });
 
         return false;
-    }
-
-    /**
-     * Retrieves the value of an attribute from the map of the annotation's values.
-     *
-     * @param attributeName the name of the attribute to lookup
-     * @param annotationMap the map that holds the attributes & their associated values
-     * @return the value of the requested attribute
-     */
-    private String getAnnotationAttributeValue(String attributeName,
-                                               Map<? extends ExecutableElement, ? extends AnnotationValue> annotationMap) {
-        Set<? extends ExecutableElement> annotationAttributes = annotationMap.keySet();
-        ExecutableElement attribute = annotationAttributes.stream()
-                .filter(attr -> attr.getSimpleName().toString().equalsIgnoreCase(attributeName))
-                .findAny()
-                .get();
-
-        return annotationMap.get(attribute)
-                .getValue()
-                .toString();
     }
 
     /**
