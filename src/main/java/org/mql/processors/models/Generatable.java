@@ -1,4 +1,4 @@
-package org.mql.processors.generators;
+package org.mql.processors.models;
 
 /**
  * A marker interface, indicating that the implementor class

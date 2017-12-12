@@ -1,5 +1,7 @@
 package org.mql.processors.generators;
 
+import org.mql.processors.models.Generatable;
+
 /**
  * @author Mohammed Aouf ZOUAG, on 12/12/2017
  */
