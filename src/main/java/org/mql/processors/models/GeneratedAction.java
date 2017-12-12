@@ -1,11 +1,13 @@
 package org.mql.processors.models;
 
+import org.mql.processors.generators.Generatable;
+
 /**
  * A class that holds the data for a new Action class to be generated.
  *
  * @author Mohammed Aouf ZOUAG, on 12/11/2017
  */
-public class GeneratedAction {
+public class GeneratedAction implements Generatable {
     /**
      * The actionName of the action to be generated.
      */
