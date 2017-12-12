@@ -53,14 +53,14 @@ public class ActionProcessor extends AbstractProcessor {
     }
 
     /**
-     * @param actionElement the element corresponding to the annotated model class
+     * @param modelElement the element corresponding to the annotated model class
      * @return a GeneratedAction instance that holds the information of the new action class to be generated.
      */
-    private GeneratedAction extractAction(TypeElement actionElement) {
-        String modelClassSimpleName = actionElement.getSimpleName().toString();
-        String modelQualifiedClassName = actionElement.getQualifiedName().toString();
+    private GeneratedAction extractAction(TypeElement modelElement) {
+        String modelClassSimpleName = modelElement.getSimpleName().toString();
+        String modelQualifiedClassName = modelElement.getQualifiedName().toString();
 
-        AnnotationMirror annotation = actionElement.getAnnotationMirrors()
+        AnnotationMirror annotation = modelElement.getAnnotationMirrors()
                 .stream()
                 .filter(annotationMirror -> annotationMirror.getAnnotationType().asElement().equals(actionElement))
                 .findAny()

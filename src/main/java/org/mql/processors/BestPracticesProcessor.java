@@ -8,12 +8,17 @@ import javax.lang.model.element.*;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
  * @author Mohammed Aouf ZOUAG, on 12/11/2017
  */
-@SupportedAnnotationTypes({"org.mql.bestpractices.Model", "org.mql.bestpractices.CheckForBestPractices"})
+@SupportedAnnotationTypes({
+        "org.mql.bestpractices.CheckForBestPractices",
+        "org.mql.bestpractices.Model",
+        "org.mql.bestpractices.Capitalized"
+})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class BestPracticesProcessor extends AbstractProcessor {
 
@@ -22,50 +27,45 @@ public class BestPracticesProcessor extends AbstractProcessor {
     private Elements elementUtils;
     private TypeElement bestPracticesElement;
     private TypeElement modelElement;
+    private TypeElement capitalizedElement;
     /**
      * A flag indicating whether this processor had already processed annotations in a previous round.
      */
     private boolean hasProcessedAnnotations = false;
-    private boolean bestPracticesEnabled = false;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         elementUtils = processingEnv.getElementUtils();
-        modelElement = processingEnv.getElementUtils().getTypeElement("org.mql.bestpractices.Model");
-        bestPracticesElement = processingEnv.getElementUtils()
-                .getTypeElement("org.mql.bestpractices.CheckForBestPractices");
+
+        bestPracticesElement = elementUtils.getTypeElement("org.mql.bestpractices.CheckForBestPractices");
+        modelElement = elementUtils.getTypeElement("org.mql.bestpractices.Model");
+        capitalizedElement = elementUtils.getTypeElement("org.mql.bestpractices.Capitalized");
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        roundEnv.getElementsAnnotatedWith(bestPracticesElement)
-                .stream()
-                .findAny()
-                .ifPresent(annotatedPackage -> {
-                    bestPracticesEnabled = checksAreEnabled(annotatedPackage);
+        if (!roundEnv.errorRaised() && !roundEnv.processingOver()) {
+            if (checksAreEnabled(roundEnv)) {
+                processingEnv.getMessager().printMessage(
+                        Diagnostic.Kind.NOTE, "MQL: Best practices mode is enabled.");
 
-                    if (bestPracticesEnabled) {
-                        processingEnv.getMessager().printMessage(
-                                Diagnostic.Kind.NOTE, "MQL: Best practices mode is enabled.");
+                boolean allModelsAreWellPackaged = checkThatAllModelsAreWellPackaged(roundEnv);
 
-                        boolean allModelsAreWellPackaged = checkThatAllModelsAreWellPackaged(roundEnv);
+                if (allModelsAreWellPackaged) {
+                    processingEnv.getMessager().printMessage(
+                            Diagnostic.Kind.NOTE, "All model classes are well-packaged.");
+                }
 
-                        if (!hasProcessedAnnotations) {
-                            if (allModelsAreWellPackaged) {
-                                processingEnv.getMessager().printMessage(
-                                        Diagnostic.Kind.NOTE, "All model classes are well-packaged.");
-                            }
-
-                        }
-                    } else {
-                        processingEnv.getMessager().printMessage(
-                                Diagnostic.Kind.NOTE, "MQL: Best practices mode is disabled.");
-                    }
-
-                    hasProcessedAnnotations = true;
-                });
-
+                // All annotations were processed
+                hasProcessedAnnotations = true;
+            } else {
+                if (!hasProcessedAnnotations) {
+                    processingEnv.getMessager().printMessage(
+                            Diagnostic.Kind.NOTE, "MQL: Best practices mode is disabled.");
+                }
+            }
+        }
         return false;
     }
 
@@ -80,10 +80,18 @@ public class BestPracticesProcessor extends AbstractProcessor {
      * This method determines whether to activate the checks for the use of best practices or not,
      * based on the value specified within the @{@link org.mql.bestpractices.CheckForBestPractices} annotation.
      *
-     * @param annotatedPackage the package that was annotated with @{@link org.mql.bestpractices.CheckForBestPractices}
+     * @param roundEnvironment
      * @return true if checks are enabled, false otherwise
      */
-    private boolean checksAreEnabled(Element annotatedPackage) {
+    private boolean checksAreEnabled(RoundEnvironment roundEnvironment) {
+        Optional<? extends Element> optional = roundEnvironment.getElementsAnnotatedWith(bestPracticesElement)
+                .stream()
+                .findAny();
+
+        if (!optional.isPresent())
+            return false; // No @CheckForBestPractices annotation could be found
+
+        Element annotatedPackage = optional.get();
         AnnotationMirror annotation = annotatedPackage.getAnnotationMirrors()
                 .stream()
                 .filter(annotationMirror -> annotationMirror.getAnnotationType()
