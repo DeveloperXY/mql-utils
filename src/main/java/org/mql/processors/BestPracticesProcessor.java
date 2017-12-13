@@ -1,5 +1,6 @@
 package org.mql.processors;
 
+import org.mql.processors.sub.CapitalizedSubProcessor;
 import org.mql.processors.sub.ModelSubProcessor;
 import org.mql.processors.sub.SubProcessor;
 import org.mql.utils.Annotations;
@@ -16,21 +17,20 @@ import java.util.Set;
 /**
  * @author Mohammed Aouf ZOUAG, on 12/11/2017
  */
-@SupportedAnnotationTypes({
-        Annotations.BEST_PRACTICES,
-        Annotations.MODEL
-})
+@SupportedAnnotationTypes("*")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class BestPracticesProcessor extends AbstractProcessor {
-
-    private Elements elementUtils;
-    private TypeElement bestPracticesElement;
     /**
      * A flag indicating whether this processor had already processed annotations in a previous round.
      */
     private boolean hasProcessedAnnotations = false;
+
+    private Elements elementUtils;
+    private TypeElement bestPracticesElement;
     private RoundEnvironment roundEnv;
+
     private SubProcessor modelSubProcessor;
+    private SubProcessor capitalizedSubProcessor;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -51,10 +51,16 @@ public class BestPracticesProcessor extends AbstractProcessor {
                 initializeSubProcessors();
 
                 boolean allModelsAreWellPackaged = modelSubProcessor.run();
+                boolean allClassNamesAreCapitalized = capitalizedSubProcessor.run();
 
                 if (allModelsAreWellPackaged) {
                     processingEnv.getMessager().printMessage(
                             Diagnostic.Kind.NOTE, "All model classes are well-packaged.");
+                }
+
+                if (allClassNamesAreCapitalized) {
+                    processingEnv.getMessager().printMessage(
+                            Diagnostic.Kind.NOTE, "All classes are well named.");
                 }
 
                 // All annotations were processed
@@ -73,6 +79,7 @@ public class BestPracticesProcessor extends AbstractProcessor {
 
     private void initializeSubProcessors() {
         modelSubProcessor = new ModelSubProcessor(processingEnv, roundEnv);
+        capitalizedSubProcessor = new CapitalizedSubProcessor(processingEnv, roundEnv);
     }
 
     /**

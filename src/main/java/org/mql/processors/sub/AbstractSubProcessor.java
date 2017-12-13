@@ -2,6 +2,7 @@ package org.mql.processors.sub;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.util.Elements;
 
 /**
  * @author Mohammed Aouf ZOUAG, on 12/13/2017
@@ -9,18 +10,12 @@ import javax.annotation.processing.RoundEnvironment;
 public abstract class AbstractSubProcessor implements SubProcessor {
     protected ProcessingEnvironment processingEnvironment;
     protected RoundEnvironment roundEnvironment;
+    protected Elements elementUtils;
 
     public AbstractSubProcessor(ProcessingEnvironment processingEnvironment, RoundEnvironment roundEnvironment) {
         this.processingEnvironment = processingEnvironment;
         this.roundEnvironment = roundEnvironment;
-    }
-
-    public AbstractSubProcessor(ProcessingEnvironment processingEnvironment) {
-        this.processingEnvironment = processingEnvironment;
-    }
-
-    public AbstractSubProcessor(RoundEnvironment roundEnvironment) {
-        this.roundEnvironment = roundEnvironment;
+        elementUtils = processingEnvironment.getElementUtils();
     }
 
     public ProcessingEnvironment getProcessingEnvironment() {
@@ -29,5 +24,9 @@ public abstract class AbstractSubProcessor implements SubProcessor {
 
     public RoundEnvironment getRoundEnvironment() {
         return roundEnvironment;
+    }
+
+    public Elements getElementUtils() {
+        return elementUtils;
     }
 }

@@ -1,3 +1,2 @@
-org.mql.processors.CapitalizedProcessor
 org.mql.processors.BestPracticesProcessor
 org.mql.processors.ActionProcessor

@@ -18,7 +18,6 @@ public class ModelSubProcessor extends AbstractSubProcessor {
     public ModelSubProcessor(ProcessingEnvironment processingEnvironment, RoundEnvironment roundEnvironment) {
         super(processingEnvironment, roundEnvironment);
 
-        Elements elementUtils = processingEnvironment.getElementUtils();
         modelElement = elementUtils.getTypeElement("org.mql.bestpractices.Model");
     }
 
@@ -57,9 +56,9 @@ public class ModelSubProcessor extends AbstractSubProcessor {
             if (!hostPackageName.endsWith(MODELS_PACKAGE_NAME)) {
                 // The model class is not declared within the appropriate package
                 errorMessage = String.format(
-                        "For best practices, don't declare the '%s' class in the '%s' package.\n" +
-                                "Instead, declare it within a '%s' package for the example.\n" +
-                                "A package name ending with '%s' will indicate that it contains model classes only.\n" +
+                        "For best practices, don't declare the '%s' class in the '%s' package. " +
+                                "Instead, declare it within a '%s' package for the example. " +
+                                "A package name ending with '%s' will indicate that it contains model classes only. " +
                                 "That won't only make your code more readable, but more understandable too.",
                         modelSimpleName, hostPackageName, hostPackageName + "." + MODELS_PACKAGE_NAME, MODELS_PACKAGE_NAME);
                 isWellPackaged = false;
