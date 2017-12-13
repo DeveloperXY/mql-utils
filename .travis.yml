@@ -2,4 +2,4 @@ language: java
   - oraclejdk8
 
 before_script:
-  - chmod a+x gradlew
+  - chmod +x gradlew
