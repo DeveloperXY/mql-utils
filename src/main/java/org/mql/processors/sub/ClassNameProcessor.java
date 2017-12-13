@@ -23,7 +23,8 @@ public class ClassNameProcessor extends AbstractSubProcessor {
                 .stream()
                 .map(Object::toString)
                 .map(elementUtils::getTypeElement)
-                .allMatch(this::checkThatClassNameIsCapitalized);
+                .map(this::checkThatClassNameIsCapitalized)
+                .allMatch(b -> b); // calling map() then allMatch instead of AllMatch alone to process all class names
     }
 
     private boolean checkThatClassNameIsCapitalized(TypeElement classElement) {

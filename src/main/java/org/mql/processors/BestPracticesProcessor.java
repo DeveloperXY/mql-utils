@@ -1,6 +1,7 @@
 package org.mql.processors;
 
 import org.mql.processors.sub.ClassNameProcessor;
+import org.mql.processors.sub.MethodNameProcessor;
 import org.mql.processors.sub.ModelSubProcessor;
 import org.mql.processors.sub.SubProcessor;
 import org.mql.utils.Annotations;
@@ -29,8 +30,9 @@ public class BestPracticesProcessor extends AbstractProcessor {
     private TypeElement bestPracticesElement;
     private RoundEnvironment roundEnv;
 
-    private SubProcessor modelSubProcessor;
-    private SubProcessor capitalizedSubProcessor;
+    private SubProcessor modelsProcessor;
+    private SubProcessor classNamesProcessor;
+    private SubProcessor methodNamesProcessor;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -47,11 +49,12 @@ public class BestPracticesProcessor extends AbstractProcessor {
         if (!roundEnv.errorRaised() && !roundEnv.processingOver()) {
             if (checksAreEnabled(roundEnv)) {
                 processingEnv.getMessager().printMessage(
-                        Diagnostic.Kind.NOTE, "MQL: Best practices mode is enabled.");
+                        Diagnostic.Kind.NOTE, "Verifying MQL best practices...");
                 initializeSubProcessors();
 
-                boolean allModelsAreWellPackaged = modelSubProcessor.run();
-                boolean allClassNamesAreCapitalized = capitalizedSubProcessor.run();
+                boolean allModelsAreWellPackaged = modelsProcessor.run();
+                boolean allClassNamesAreCapitalized = classNamesProcessor.run();
+                boolean allMethodNamesAreCapitalized = methodNamesProcessor.run();
 
                 if (allModelsAreWellPackaged) {
                     processingEnv.getMessager().printMessage(
@@ -61,6 +64,11 @@ public class BestPracticesProcessor extends AbstractProcessor {
                 if (allClassNamesAreCapitalized) {
                     processingEnv.getMessager().printMessage(
                             Diagnostic.Kind.NOTE, "All classes are well named.");
+                }
+
+                if (allMethodNamesAreCapitalized) {
+                    processingEnv.getMessager().printMessage(
+                            Diagnostic.Kind.NOTE, "All methods are well named.");
                 }
 
                 // All annotations were processed
@@ -78,8 +86,9 @@ public class BestPracticesProcessor extends AbstractProcessor {
     }
 
     private void initializeSubProcessors() {
-        modelSubProcessor = new ModelSubProcessor(processingEnv, roundEnv);
-        capitalizedSubProcessor = new ClassNameProcessor(processingEnv, roundEnv);
+        modelsProcessor = new ModelSubProcessor(processingEnv, roundEnv);
+        classNamesProcessor = new ClassNameProcessor(processingEnv, roundEnv);
+        methodNamesProcessor = new MethodNameProcessor(processingEnv, roundEnv);
     }
 
     /**
