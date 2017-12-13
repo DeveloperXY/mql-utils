@@ -9,15 +9,16 @@ import javax.tools.Diagnostic;
 /**
  * @author Mohammed Aouf ZOUAG, on 12/13/2017
  */
-public class CapitalizedSubProcessor extends AbstractSubProcessor {
+public class ClassNameProcessor extends AbstractSubProcessor {
 
-    public CapitalizedSubProcessor(ProcessingEnvironment processingEnvironment, RoundEnvironment roundEnvironment) {
+    public ClassNameProcessor(ProcessingEnvironment processingEnvironment, RoundEnvironment roundEnvironment) {
         super(processingEnvironment, roundEnvironment);
     }
 
     @Override
     public boolean run() {
         // The root elements will contain a package definition, due to the presence of a package-info.java file
+        // We just need the class elements
         return ElementFilter.typesIn(roundEnvironment.getRootElements())
                 .stream()
                 .map(Object::toString)

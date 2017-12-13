@@ -1,6 +1,6 @@
 package org.mql.processors;
 
-import org.mql.processors.sub.CapitalizedSubProcessor;
+import org.mql.processors.sub.ClassNameProcessor;
 import org.mql.processors.sub.ModelSubProcessor;
 import org.mql.processors.sub.SubProcessor;
 import org.mql.utils.Annotations;
@@ -79,7 +79,7 @@ public class BestPracticesProcessor extends AbstractProcessor {
 
     private void initializeSubProcessors() {
         modelSubProcessor = new ModelSubProcessor(processingEnv, roundEnv);
-        capitalizedSubProcessor = new CapitalizedSubProcessor(processingEnv, roundEnv);
+        capitalizedSubProcessor = new ClassNameProcessor(processingEnv, roundEnv);
     }
 
     /**
