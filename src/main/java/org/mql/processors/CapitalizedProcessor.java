@@ -20,6 +20,10 @@ import static java.util.stream.Collectors.toList;
 public class CapitalizedProcessor extends AbstractProcessor {
 
     private Elements elementUtils;
+    /**
+     * A flag indicating whether this processor had already processed annotations in a previous round.
+     */
+    private boolean hasProcessedAnnotations = false;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -29,7 +33,7 @@ public class CapitalizedProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        if (!roundEnv.errorRaised() && !roundEnv.processingOver()) {
+        if (!hasProcessedAnnotations) {
             List<TypeElement> allClassElements = roundEnv.getRootElements()
                     .stream()
                     .map(Object::toString)
@@ -51,10 +55,14 @@ public class CapitalizedProcessor extends AbstractProcessor {
                 }
             }
 
+            // All annotations were processed
+            hasProcessedAnnotations = true;
+
             if (allGood)
                 processingEnv.getMessager().printMessage(
                         Diagnostic.Kind.NOTE, "All classes are well named.");
         }
+
         return false;
     }
 }
