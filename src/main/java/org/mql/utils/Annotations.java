@@ -8,7 +8,12 @@ import java.util.Set;
 /**
  * @author Mohammed Aouf ZOUAG, on 12/11/2017
  */
-public class AnnotationUtils {
+public class Annotations {
+
+    public static final String BEST_PRACTICES = "org.mql.bestpractices.CheckForBestPractices";
+    public static final String MODEL = "org.mql.bestpractices.Model";
+    public static final String ACTION_REQUIRED = "org.mql.jee.annotations.ActionRequired";
+
     /**
      * Retrieves the value of an attribute from the map of the annotation's values.
      *

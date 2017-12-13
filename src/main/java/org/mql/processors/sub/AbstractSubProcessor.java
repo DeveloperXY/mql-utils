@@ -27,15 +27,7 @@ public abstract class AbstractSubProcessor implements SubProcessor {
         return processingEnvironment;
     }
 
-    public void setProcessingEnvironment(ProcessingEnvironment processingEnvironment) {
-        this.processingEnvironment = processingEnvironment;
-    }
-
     public RoundEnvironment getRoundEnvironment() {
         return roundEnvironment;
-    }
-
-    public void setRoundEnvironment(RoundEnvironment roundEnvironment) {
-        this.roundEnvironment = roundEnvironment;
     }
 }

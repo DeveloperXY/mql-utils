@@ -2,7 +2,7 @@ package org.mql.processors;
 
 import org.mql.processors.generators.ActionGenerator;
 import org.mql.processors.models.GeneratedAction;
-import org.mql.utils.AnnotationUtils;
+import org.mql.utils.Annotations;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -17,7 +17,7 @@ import java.util.Set;
 /**
  * @author Mohammed Aouf ZOUAG, on 12/11/2017
  */
-@SupportedAnnotationTypes("org.mql.jee.annotations.ActionRequired")
+@SupportedAnnotationTypes(Annotations.ACTION_REQUIRED)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class ActionProcessor extends AbstractProcessor {
 
@@ -36,7 +36,7 @@ public class ActionProcessor extends AbstractProcessor {
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         elementUtils = processingEnv.getElementUtils();
-        actionElement = processingEnv.getElementUtils().getTypeElement("org.mql.jee.annotations.ActionRequired");
+        actionElement = processingEnv.getElementUtils().getTypeElement(Annotations.ACTION_REQUIRED);
 
         actionGenerator = new ActionGenerator(processingEnv);
     }
@@ -69,14 +69,14 @@ public class ActionProcessor extends AbstractProcessor {
         Map<? extends ExecutableElement, ? extends AnnotationValue> annotationMap =
                 elementUtils.getElementValuesWithDefaults(annotation);
 
-        String actionName = AnnotationUtils.getAttributeValue("value", annotationMap);
+        String actionName = Annotations.getAttributeValue("value", annotationMap);
 
         if (actionName.isEmpty()) {
             // No name was provided, use a default one
             actionName = modelClassSimpleName + DEFAULT_ACTION_NAME_SUFFIX;
         }
 
-        String defaultResult = AnnotationUtils.getAttributeValue("defaultResult", annotationMap);
+        String defaultResult = Annotations.getAttributeValue("defaultResult", annotationMap);
         return new GeneratedAction(actionName, defaultResult, DEFAULT_ACTION_PACKAGE_NAME,
                 modelClassSimpleName, modelQualifiedClassName);
     }

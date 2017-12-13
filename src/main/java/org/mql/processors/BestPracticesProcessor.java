@@ -2,7 +2,7 @@ package org.mql.processors;
 
 import org.mql.processors.sub.ModelSubProcessor;
 import org.mql.processors.sub.SubProcessor;
-import org.mql.utils.AnnotationUtils;
+import org.mql.utils.Annotations;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -17,8 +17,8 @@ import java.util.Set;
  * @author Mohammed Aouf ZOUAG, on 12/11/2017
  */
 @SupportedAnnotationTypes({
-        "org.mql.bestpractices.CheckForBestPractices",
-        "org.mql.bestpractices.Model"
+        Annotations.BEST_PRACTICES,
+        Annotations.MODEL
 })
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class BestPracticesProcessor extends AbstractProcessor {
@@ -37,7 +37,7 @@ public class BestPracticesProcessor extends AbstractProcessor {
         super.init(processingEnv);
         elementUtils = processingEnv.getElementUtils();
 
-        bestPracticesElement = elementUtils.getTypeElement("org.mql.bestpractices.CheckForBestPractices");
+        bestPracticesElement = elementUtils.getTypeElement(Annotations.BEST_PRACTICES);
     }
 
     @Override
@@ -101,6 +101,6 @@ public class BestPracticesProcessor extends AbstractProcessor {
         Map<? extends ExecutableElement, ? extends AnnotationValue> annotationMap =
                 elementUtils.getElementValuesWithDefaults(annotation);
 
-        return Boolean.valueOf(AnnotationUtils.getAttributeValue("enabled", annotationMap));
+        return Boolean.valueOf(Annotations.getAttributeValue("enabled", annotationMap));
     }
 }
