@@ -48,7 +48,13 @@ public class GeneratedAction implements Generatable {
     }
 
     public String getActionName() {
-        return actionName;
+        if (Character.isUpperCase(actionName.charAt(0)))
+            return actionName;
+
+        if (actionName.length() == 1)
+            return Character.toUpperCase(actionName.charAt(0)) + "";
+
+        return Character.toUpperCase(actionName.charAt(0)) + actionName.substring(1);
     }
 
     public void setActionName(String actionName) {

@@ -63,8 +63,6 @@ public class ActionGenerator implements Generator<GeneratedAction> {
                     Diagnostic.Kind.NOTE, "creating source file: " + jfo.toUri());
 
             Writer writer = jfo.openWriter();
-            processingEnvironment.getMessager().printMessage(
-                    Diagnostic.Kind.NOTE, "applying velocity template: " + velocityTemplate.getName());
             velocityTemplate.merge(velocityContext, writer);
             writer.close();
 
