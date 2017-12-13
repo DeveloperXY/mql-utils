@@ -1,15 +1,14 @@
+plugins {
+    id "com.jfrog.bintray" version "1.7.3"
+}
+
 group 'com.developerxy'
-version '1.0-SNAPSHOT'
+version '1.0'
 
 apply plugin: 'java'
-
-archivesBaseName = "mql-utils"
+apply plugin: 'maven-publish'
 
 sourceCompatibility = 1.8
-
-tasks.withType(Jar) {
-    destinationDir = file("C:\\Users\\Moham\\IdeaProjects\\MqlUtilsPlayground\\libs")
-}
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
@@ -24,6 +23,60 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 artifacts {
     archives sourcesJar
     archives javadocJar
+}
+
+// Create the pom configuration:
+def pomConfig = {
+    developers {
+        developer {
+            id "DeveloperXY"
+            name "Mohammed Aouf ZOUAG"
+            email "m.a.zouag@gmail.com"
+        }
+    }
+
+    scm {
+        url "https://github.com/DeveloperXY/mql-utils"
+    }
+}
+
+// Create the publication with the pom configuration:
+publishing {
+    publications {
+        MyPublication(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            groupId group
+            artifactId 'mql-utils'
+            version project.version
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description', 'A set of MQL flavoured utlities\' library')
+                root.appendNode('name', 'mql-utils')
+                root.children().last() + pomConfig
+            }
+        }
+    }
+}
+
+bintray {
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file("local.properties").newDataInputStream())
+    user = properties.getProperty('BINTRAY_USER')
+    key = properties.getProperty('BINTRAY_KEY')
+    publications = ['MyPublication']
+    pkg {
+        repo = 'maven'
+        name = 'mql-utils'
+        licenses = ['Unlicense']
+        vcsUrl = 'https://github.com/DeveloperXY/mql-utils.git'
+        version {
+            name = project.version
+            desc = 'A set of MQL flavoured utlities\' library'
+            released = new Date()
+        }
+    }
 }
 
 repositories {
