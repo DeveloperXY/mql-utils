@@ -1,5 +1,7 @@
 package org.mql.processors;
 
+import org.mql.processors.sub.ModelSubProcessor;
+import org.mql.processors.sub.SubProcessor;
 import org.mql.utils.AnnotationUtils;
 
 import javax.annotation.processing.*;
@@ -21,15 +23,14 @@ import java.util.Set;
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class BestPracticesProcessor extends AbstractProcessor {
 
-    private static final String MODELS_PACKAGE_NAME = "models";
-
     private Elements elementUtils;
     private TypeElement bestPracticesElement;
-    private TypeElement modelElement;
     /**
      * A flag indicating whether this processor had already processed annotations in a previous round.
      */
     private boolean hasProcessedAnnotations = false;
+    private RoundEnvironment roundEnv;
+    private SubProcessor modelSubProcessor;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -37,17 +38,19 @@ public class BestPracticesProcessor extends AbstractProcessor {
         elementUtils = processingEnv.getElementUtils();
 
         bestPracticesElement = elementUtils.getTypeElement("org.mql.bestpractices.CheckForBestPractices");
-        modelElement = elementUtils.getTypeElement("org.mql.bestpractices.Model");
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        this.roundEnv = roundEnv;
+
         if (!roundEnv.errorRaised() && !roundEnv.processingOver()) {
             if (checksAreEnabled(roundEnv)) {
                 processingEnv.getMessager().printMessage(
                         Diagnostic.Kind.NOTE, "MQL: Best practices mode is enabled.");
+                initializeSubProcessors();
 
-                boolean allModelsAreWellPackaged = checkThatAllModelsAreWellPackaged(roundEnv);
+                boolean allModelsAreWellPackaged = modelSubProcessor.run();
 
                 if (allModelsAreWellPackaged) {
                     processingEnv.getMessager().printMessage(
@@ -68,11 +71,8 @@ public class BestPracticesProcessor extends AbstractProcessor {
         return false;
     }
 
-    private boolean checkThatAllModelsAreWellPackaged(RoundEnvironment roundEnv) {
-        return roundEnv.getElementsAnnotatedWith(modelElement)
-                .stream()
-                .map(element -> ((TypeElement) element))
-                .allMatch(this::isModelClassWellPackaged);
+    private void initializeSubProcessors() {
+        modelSubProcessor = new ModelSubProcessor(processingEnv, roundEnv);
     }
 
     /**
@@ -102,47 +102,5 @@ public class BestPracticesProcessor extends AbstractProcessor {
                 elementUtils.getElementValuesWithDefaults(annotation);
 
         return Boolean.valueOf(AnnotationUtils.getAttributeValue("enabled", annotationMap));
-    }
-
-    /**
-     * Checks if the passed-in model class is declared within the {@value MODELS_PACKAGE_NAME} package.
-     *
-     * @param annotatedClass the model class to be checked
-     * @return true if the class is well packaged, & false otherwise.
-     */
-    private boolean isModelClassWellPackaged(TypeElement annotatedClass) {
-        boolean isWellPackaged = true;
-        String errorMessage = "";
-        String modelQualifiedName = annotatedClass.getQualifiedName().toString();
-        String modelSimpleName = annotatedClass.getSimpleName().toString();
-
-        if (modelSimpleName.equals(modelQualifiedName)) {
-            // The annotated class is within the default package
-            errorMessage = String.format(
-                    "For best practices, don't declare the '%s' class in the default package. " +
-                            "Declare it within a package whose name ends with '%s' instead. " +
-                            "That's more trivial.",
-                    modelSimpleName, MODELS_PACKAGE_NAME);
-            isWellPackaged = false;
-        } else {
-            // The annotated class is declared within a package different than the default one
-            // Get the host package's name
-            String hostPackageName = modelQualifiedName.substring(0, modelQualifiedName.lastIndexOf("."));
-            if (!hostPackageName.endsWith(MODELS_PACKAGE_NAME)) {
-                // The model class is not declared within the appropriate package
-                errorMessage = String.format(
-                        "For best practices, don't declare the '%s' class in the '%s' package.\n" +
-                                "Instead, declare it within a '%s' package for the example.\n" +
-                                "A package name ending with '%s' will indicate that it contains model classes only.\n" +
-                                "That won't only make your code more readable, but more understandable too.",
-                        modelSimpleName, hostPackageName, hostPackageName + "." + MODELS_PACKAGE_NAME, MODELS_PACKAGE_NAME);
-                isWellPackaged = false;
-            }
-        }
-
-        if (!isWellPackaged)
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, errorMessage, annotatedClass);
-
-        return isWellPackaged;
     }
 }
