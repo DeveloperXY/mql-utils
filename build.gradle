@@ -11,7 +11,11 @@ apply plugin: 'maven-publish'
 sourceCompatibility = 1.8
 
 tasks.withType(Jar) {
-    destinationDir = file('C:/Users/Moham/IdeaProjects/MqlUtilsPlayground/libs')
+    try {
+        destinationDir = file('C:/Users/Moham/IdeaProjects/MqlUtilsPlayground/libs')
+    } catch (Exception e) {
+
+    }
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
