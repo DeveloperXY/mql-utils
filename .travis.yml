@@ -1,5 +1,5 @@
 language: java
   - oraclejdk8
 
-before_script:
+before_install:
   - chmod +x gradlew
