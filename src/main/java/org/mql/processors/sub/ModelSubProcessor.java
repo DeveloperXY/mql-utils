@@ -2,9 +2,11 @@ package org.mql.processors.sub;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
+import java.util.Set;
 
 /**
  * @author Mohammed Aouf ZOUAG, on 12/13/2017
@@ -23,6 +25,12 @@ public class ModelSubProcessor extends AbstractSubProcessor {
 
     @Override
     public boolean run() {
+        Set<? extends Element> annotatedElements = roundEnvironment.getElementsAnnotatedWith(modelElement);
+        if (annotatedElements.size() == 0) {
+            processingEnvironment.getMessager().printMessage(Diagnostic.Kind.NOTE, "No @Model classes found.");
+            return false;
+        }
+
         return roundEnvironment.getElementsAnnotatedWith(modelElement)
                 .stream()
                 .map(element -> ((TypeElement) element))
