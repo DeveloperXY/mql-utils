@@ -5,6 +5,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic;
+import java.util.stream.Collectors;
 
 /**
  * @author Mohammed Aouf ZOUAG, on 12/13/2017
@@ -24,6 +25,8 @@ public class ClassNameProcessor extends AbstractSubProcessor {
                 .map(Object::toString)
                 .map(elementUtils::getTypeElement)
                 .map(this::checkThatClassNameIsCapitalized)
+                .collect(Collectors.toList()) // Weird bug happens if I don't collect into a List here:
+                .stream()                     // Only the first encountered class is processed.
                 .allMatch(b -> b); // calling map() then allMatch instead of AllMatch alone to process all class names
     }
 
