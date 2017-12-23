@@ -19,7 +19,7 @@ import java.util.Set;
  */
 @SupportedAnnotationTypes(Annotations.ACTION_REQUIRED)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-public class ActionProcessor extends AbstractProcessor {
+public class ActionRequiredProcessor extends AbstractProcessor {
 
     /**
      * The qualified name of the package under which the generated action classes will reside.
