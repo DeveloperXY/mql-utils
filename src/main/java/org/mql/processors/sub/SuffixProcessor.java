@@ -1,6 +1,5 @@
 package org.mql.processors.sub;
 
-import org.mql.bestpractices.NameSuffixedWith;
 import org.mql.utils.Annotations;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -18,6 +17,9 @@ import java.util.stream.Collectors;
  */
 public class SuffixProcessor extends AbstractSubProcessor {
 
+    /**
+     * The annotation from which to extract the suffix.
+     */
     private final TypeElement constructAnnotation;
     /**
      * The required suffix for the class elements to be checked.
@@ -58,16 +60,16 @@ public class SuffixProcessor extends AbstractSubProcessor {
     }
 
     /**
-     * @param element the class element to be verified
+     * @param classElement the class element to be verified
      * @return true if the class name ends with {@code suffix}, false otherwise
      */
-    private boolean checkThatClassIsAppropriatelySuffixed(Element element) {
-        String className = element.getSimpleName().toString();
+    private boolean checkThatClassIsAppropriatelySuffixed(Element classElement) {
+        String className = classElement.getSimpleName().toString();
         if (className.endsWith(suffix))
             return true;
 
         String errorMessage = String.format("The class '%s' should be suffixed with '%s'.", className, suffix);
-        processingEnvironment.getMessager().printMessage(Diagnostic.Kind.NOTE, errorMessage, element);
+        processingEnvironment.getMessager().printMessage(Diagnostic.Kind.NOTE, errorMessage, classElement);
         return false;
     }
 }
