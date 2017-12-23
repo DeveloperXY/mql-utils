@@ -12,6 +12,10 @@ public class Annotations {
 
     public static final String BEST_PRACTICES = "org.mql.bestpractices.CheckForBestPractices";
     public static final String MODEL = "org.mql.bestpractices.Model";
+    public static final String ACTION = "org.mql.bestpractices.Action";
+    public static final String DAO = "org.mql.bestpractices.Dao";
+    public static final String SERVICE = "org.mql.bestpractices.Service";
+    public static final String NAME_SUFFIXED_WITH = "org.mql.bestpractices.NameSuffixedWith";
     public static final String ACTION_REQUIRED = "org.mql.jee.annotations.ActionRequired";
 
     /**
