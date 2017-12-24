@@ -1,9 +1,6 @@
 package org.mql.processors;
 
-import org.mql.processors.sub.ClassNameProcessor;
-import org.mql.processors.sub.MethodNameProcessor;
-import org.mql.processors.sub.ModelSubProcessor;
-import org.mql.processors.sub.SubProcessor;
+import org.mql.processors.sub.*;
 import org.mql.utils.Annotations;
 
 import javax.annotation.processing.*;
@@ -33,6 +30,7 @@ public class BestPracticesProcessor extends AbstractProcessor {
     private SubProcessor modelsProcessor;
     private SubProcessor classNamesProcessor;
     private SubProcessor methodNamesProcessor;
+    private SubProcessor actionProcessor;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -55,6 +53,7 @@ public class BestPracticesProcessor extends AbstractProcessor {
                 boolean allModelsAreWellPackaged = modelsProcessor.run();
                 boolean allClassNamesAreCapitalized = classNamesProcessor.run();
                 boolean allMethodNamesAreCapitalized = methodNamesProcessor.run();
+                boolean allActionClassesAreWellSuffixed = actionProcessor.run();
 
                 if (allModelsAreWellPackaged) {
                     processingEnv.getMessager().printMessage(
@@ -63,12 +62,17 @@ public class BestPracticesProcessor extends AbstractProcessor {
 
                 if (allClassNamesAreCapitalized) {
                     processingEnv.getMessager().printMessage(
-                            Diagnostic.Kind.NOTE, "All classes are well named.");
+                            Diagnostic.Kind.NOTE, "All class names are capitalized.");
                 }
 
                 if (allMethodNamesAreCapitalized) {
                     processingEnv.getMessager().printMessage(
                             Diagnostic.Kind.NOTE, "All methods are well named.");
+                }
+
+                if (allActionClassesAreWellSuffixed) {
+                    processingEnv.getMessager().printMessage(
+                            Diagnostic.Kind.NOTE, "All action classes are well named.");
                 }
 
                 // All annotations were processed
@@ -89,6 +93,7 @@ public class BestPracticesProcessor extends AbstractProcessor {
         modelsProcessor = new ModelSubProcessor(processingEnv, roundEnv);
         classNamesProcessor = new ClassNameProcessor(processingEnv, roundEnv);
         methodNamesProcessor = new MethodNameProcessor(processingEnv, roundEnv);
+        actionProcessor = new ActionSubProcessor(processingEnv, roundEnv);
     }
 
     /**

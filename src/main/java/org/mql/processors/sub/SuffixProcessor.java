@@ -20,24 +20,22 @@ public class SuffixProcessor extends AbstractSubProcessor {
     /**
      * The annotation from which to extract the suffix.
      */
-    private final TypeElement constructAnnotation;
+    private TypeElement constructAnnotation;
     /**
      * The required suffix for the class elements to be checked.
      */
     private String suffix;
 
     public SuffixProcessor(ProcessingEnvironment processingEnvironment,
-                           RoundEnvironment roundEnvironment, AnnotationMirror annotation) {
+                           RoundEnvironment roundEnvironment, TypeElement annotation) {
         super(processingEnvironment, roundEnvironment);
-        this.constructAnnotation = (TypeElement) annotation.getAnnotationType().asElement();
+        this.constructAnnotation = annotation;
         extractSuffixFrom(annotation);
     }
 
-    private void extractSuffixFrom(AnnotationMirror annotation) {
+    private void extractSuffixFrom(TypeElement annotation) {
         TypeElement nameSuffixedWithElement = elementUtils.getTypeElement(Annotations.NAME_SUFFIXED_WITH);
-        AnnotationMirror nameSuffixedWithAnnotation = annotation.getAnnotationType()
-                .asElement()
-                .getAnnotationMirrors()
+        AnnotationMirror nameSuffixedWithAnnotation = annotation.getAnnotationMirrors()
                 .stream()
                 .filter(ann -> ann.getAnnotationType().asElement().equals(nameSuffixedWithElement))
                 .findAny()
@@ -71,5 +69,21 @@ public class SuffixProcessor extends AbstractSubProcessor {
         String errorMessage = String.format("The class '%s' should be suffixed with '%s'.", className, suffix);
         processingEnvironment.getMessager().printMessage(Diagnostic.Kind.NOTE, errorMessage, classElement);
         return false;
+    }
+
+    public TypeElement getConstructAnnotation() {
+        return constructAnnotation;
+    }
+
+    public void setConstructAnnotation(TypeElement constructAnnotation) {
+        this.constructAnnotation = constructAnnotation;
+    }
+
+    public String getSuffix() {
+        return suffix;
+    }
+
+    public void setSuffix(String suffix) {
+        this.suffix = suffix;
     }
 }
