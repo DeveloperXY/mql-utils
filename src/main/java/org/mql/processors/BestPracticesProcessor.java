@@ -1,19 +1,20 @@
 package org.mql.processors;
 
-import org.mql.processors.models.FailureSubject;
 import org.mql.processors.models.Payload;
 import org.mql.processors.sub.*;
 import org.mql.utils.Annotations;
+import org.mql.utils.MessagerUtils;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.util.Elements;
-import javax.tools.Diagnostic;
 import java.util.*;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.partitioningBy;
+import static org.mql.utils.MessagerUtils.displayMessage;
+import static org.mql.utils.MessagerUtils.displayMessageWithElement;
 
 /**
  * @author Mohammed Aouf ZOUAG, on 12/11/2017
@@ -34,7 +35,6 @@ public class BestPracticesProcessor extends AbstractProcessor {
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         elementUtils = processingEnv.getElementUtils();
-
         bestPracticesElement = elementUtils.getTypeElement(Annotations.BEST_PRACTICES);
     }
 
@@ -43,6 +43,8 @@ public class BestPracticesProcessor extends AbstractProcessor {
         this.roundEnv = roundEnv;
 
         if (!roundEnv.errorRaised() && !roundEnv.processingOver()) {
+            MessagerUtils.init(processingEnv);
+
             if (checksAreEnabled(roundEnv)) {
                 displayMessage("Verifying MQL best practices...");
                 runSubProcessors();
@@ -68,30 +70,17 @@ public class BestPracticesProcessor extends AbstractProcessor {
                 .map(AbstractSubProcessor::run)
                 .collect(partitioningBy(Payload::getStatus));
 
+        // Process the payloads of the sub processors that ran successfully
         payloadMap.get(true)
                 .stream()
                 .map(Payload::getSuccessMessage)
-                .forEach(this::displayMessage);
+                .forEach(MessagerUtils::displayMessage);
+        // Process the payloads of the sub processors that encountered a best practices violation
         payloadMap.get(false)
                 .stream()
                 .map(Payload::getFailureSubjects)
                 .flatMap(Collection::stream)
                 .forEach(subject -> displayMessageWithElement(subject.getMessage(), subject.getElement()));
-    }
-
-    private void displayMessage(String message) {
-        displayMessage(Diagnostic.Kind.NOTE, message, null);
-    }
-
-    private void displayMessage(Diagnostic.Kind kind, String message, Element element) {
-        if (element == null)
-            processingEnv.getMessager().printMessage(kind, message);
-        else
-            processingEnv.getMessager().printMessage(kind, message, element);
-    }
-
-    private void displayMessageWithElement(String message, Element element) {
-        displayMessage(Diagnostic.Kind.NOTE, message, element);
     }
 
     /**

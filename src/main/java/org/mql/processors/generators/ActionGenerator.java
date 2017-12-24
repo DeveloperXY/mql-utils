@@ -4,6 +4,7 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.mql.processors.models.GeneratedAction;
+import org.mql.utils.MessagerUtils;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.Diagnostic;
@@ -59,8 +60,7 @@ public class ActionGenerator implements Generator<GeneratedAction> {
             Template velocityTemplate = velocityEngine.getTemplate(VELOCITY_ACTION_CLASS_TEMPLATE_NAME);
 
             JavaFileObject jfo = processingEnvironment.getFiler().createSourceFile(action.getActionName());
-            processingEnvironment.getMessager().printMessage(
-                    Diagnostic.Kind.NOTE, "creating source file: " + jfo.toUri());
+            MessagerUtils.displayMessage("creating source file: " + jfo.toUri());
 
             Writer writer = jfo.openWriter();
             velocityTemplate.merge(velocityContext, writer);
