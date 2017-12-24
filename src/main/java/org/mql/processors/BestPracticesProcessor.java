@@ -46,7 +46,6 @@ public class BestPracticesProcessor extends AbstractProcessor {
             MessagerUtils.init(processingEnv);
 
             if (checksAreEnabled(roundEnv)) {
-                displayMessage("Verifying MQL best practices...");
                 runSubProcessors();
 
                 // All annotations were processed
@@ -71,16 +70,29 @@ public class BestPracticesProcessor extends AbstractProcessor {
                 .collect(partitioningBy(Payload::getStatus));
 
         // Process the payloads of the sub processors that ran successfully
+        StringJoiner sj = new StringJoiner("\n")
+                .add("Verifying MQL's best practices...")
+                .add("")
+                .add("-------------- SUCCESSFUL CHECKS --------------");
         payloadMap.get(true)
                 .stream()
                 .map(Payload::getSuccessMessage)
-                .forEach(MessagerUtils::displayMessage);
+                .forEach(sj::add);
         // Process the payloads of the sub processors that encountered a best practices violation
-        payloadMap.get(false)
-                .stream()
-                .map(Payload::getFailureSubjects)
-                .flatMap(Collection::stream)
-                .forEach(subject -> displayMessageWithElement(subject.getMessage(), subject.getElement()));
+        List<Payload> failedPayloads = payloadMap.get(false);
+        if (failedPayloads.size() == 0) {
+            sj.add("-----------------------------------------------");
+            displayMessage(sj.toString());
+        }
+        else {
+            sj.add("").add("-------------- WHAT'S WRONG --------------");
+            displayMessage(sj.toString());
+            payloadMap.get(false)
+                    .stream()
+                    .map(Payload::getFailureSubjects)
+                    .flatMap(Collection::stream)
+                    .forEach(subject -> displayMessageWithElement(subject.getMessage(), subject.getElement()));
+        }
     }
 
     /**
