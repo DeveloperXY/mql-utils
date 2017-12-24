@@ -1,5 +1,7 @@
 package org.mql.processors.sub;
 
+import org.mql.processors.models.FailureSubject;
+import org.mql.processors.models.Payload;
 import org.mql.utils.Annotations;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -15,7 +17,7 @@ import java.util.stream.Collectors;
  *
  * @author Mohammed Aouf ZOUAG, on 12/23/2017
  */
-public class SuffixProcessor extends AbstractSubProcessor {
+public abstract class SuffixProcessor extends AbstractSubProcessor {
 
     /**
      * The annotation from which to extract the suffix.
@@ -48,13 +50,15 @@ public class SuffixProcessor extends AbstractSubProcessor {
     }
 
     @Override
-    public boolean run() {
-        return roundEnvironment.getElementsAnnotatedWith(constructAnnotation)
+    public Payload run() {
+        status = roundEnvironment.getElementsAnnotatedWith(constructAnnotation)
                 .stream()
                 .map(this::checkThatClassIsAppropriatelySuffixed)
                 .collect(Collectors.toList())
                 .stream()
                 .allMatch(result -> result);
+
+        return statusBasedPayload();
     }
 
     /**
@@ -67,7 +71,7 @@ public class SuffixProcessor extends AbstractSubProcessor {
             return true;
 
         String errorMessage = String.format("The class '%s' should be suffixed with '%s'.", className, suffix);
-        processingEnvironment.getMessager().printMessage(Diagnostic.Kind.NOTE, errorMessage, classElement);
+        failureSubjects.add(new FailureSubject(classElement, errorMessage));
         return false;
     }
 

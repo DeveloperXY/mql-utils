@@ -1,5 +1,7 @@
 package org.mql.processors;
 
+import org.mql.processors.models.FailureSubject;
+import org.mql.processors.models.Payload;
 import org.mql.processors.sub.*;
 import org.mql.utils.Annotations;
 
@@ -8,9 +10,10 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.partitioningBy;
 
 /**
  * @author Mohammed Aouf ZOUAG, on 12/11/2017
@@ -27,11 +30,6 @@ public class BestPracticesProcessor extends AbstractProcessor {
     private TypeElement bestPracticesElement;
     private RoundEnvironment roundEnv;
 
-    private SubProcessor modelsProcessor;
-    private SubProcessor classNamesProcessor;
-    private SubProcessor methodNamesProcessor;
-    private SubProcessor actionProcessor;
-
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
@@ -46,42 +44,14 @@ public class BestPracticesProcessor extends AbstractProcessor {
 
         if (!roundEnv.errorRaised() && !roundEnv.processingOver()) {
             if (checksAreEnabled(roundEnv)) {
-                processingEnv.getMessager().printMessage(
-                        Diagnostic.Kind.NOTE, "Verifying MQL best practices...");
-                initializeSubProcessors();
-
-                boolean allModelsAreWellPackaged = modelsProcessor.run();
-                boolean allClassNamesAreCapitalized = classNamesProcessor.run();
-                boolean allMethodNamesAreCapitalized = methodNamesProcessor.run();
-                boolean allActionClassesAreWellSuffixed = actionProcessor.run();
-
-                if (allModelsAreWellPackaged) {
-                    processingEnv.getMessager().printMessage(
-                            Diagnostic.Kind.NOTE, "All model classes are well-packaged.");
-                }
-
-                if (allClassNamesAreCapitalized) {
-                    processingEnv.getMessager().printMessage(
-                            Diagnostic.Kind.NOTE, "All class names are capitalized.");
-                }
-
-                if (allMethodNamesAreCapitalized) {
-                    processingEnv.getMessager().printMessage(
-                            Diagnostic.Kind.NOTE, "All methods are well named.");
-                }
-
-                if (allActionClassesAreWellSuffixed) {
-                    processingEnv.getMessager().printMessage(
-                            Diagnostic.Kind.NOTE, "All action classes are well named.");
-                }
+                displayMessage("Verifying MQL best practices...");
+                runSubProcessors();
 
                 // All annotations were processed
                 hasProcessedAnnotations = true;
             } else {
                 if (!hasProcessedAnnotations) {
-                    processingEnv.getMessager().printMessage(
-                            Diagnostic.Kind.NOTE, "MQL: Best practices mode is disabled.");
-
+                    displayMessage("MQL: Best practices mode is disabled.");
                     hasProcessedAnnotations = true;
                 }
             }
@@ -89,11 +59,39 @@ public class BestPracticesProcessor extends AbstractProcessor {
         return false;
     }
 
-    private void initializeSubProcessors() {
-        modelsProcessor = new ModelSubProcessor(processingEnv, roundEnv);
-        classNamesProcessor = new ClassNameProcessor(processingEnv, roundEnv);
-        methodNamesProcessor = new MethodNameProcessor(processingEnv, roundEnv);
-        actionProcessor = new ActionSubProcessor(processingEnv, roundEnv);
+    private void runSubProcessors() {
+        Map<Boolean, List<Payload>> payloadMap = Stream.of(
+                new ModelSubProcessor(processingEnv, roundEnv),
+                new ClassNameProcessor(processingEnv, roundEnv),
+                new MethodNameProcessor(processingEnv, roundEnv),
+                new ActionSubProcessor(processingEnv, roundEnv))
+                .map(AbstractSubProcessor::run)
+                .collect(partitioningBy(Payload::getStatus));
+
+        payloadMap.get(true)
+                .stream()
+                .map(Payload::getSuccessMessage)
+                .forEach(this::displayMessage);
+        payloadMap.get(false)
+                .stream()
+                .map(Payload::getFailureSubjects)
+                .flatMap(Collection::stream)
+                .forEach(subject -> displayMessageWithElement(subject.getMessage(), subject.getElement()));
+    }
+
+    private void displayMessage(String message) {
+        displayMessage(Diagnostic.Kind.NOTE, message, null);
+    }
+
+    private void displayMessage(Diagnostic.Kind kind, String message, Element element) {
+        if (element == null)
+            processingEnv.getMessager().printMessage(kind, message);
+        else
+            processingEnv.getMessager().printMessage(kind, message, element);
+    }
+
+    private void displayMessageWithElement(String message, Element element) {
+        displayMessage(Diagnostic.Kind.NOTE, message, element);
     }
 
     /**

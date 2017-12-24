@@ -1,11 +1,13 @@
 package org.mql.processors.sub;
 
+import org.mql.processors.models.FailureSubject;
+import org.mql.processors.models.Payload;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
-import javax.tools.Diagnostic;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -19,10 +21,10 @@ public class MethodNameProcessor extends AbstractSubProcessor {
     }
 
     @Override
-    public boolean run() {
+    public Payload run() {
         // The root elements will contain a package definition, due to the presence of a package-info.java file
         // We just need the class elements
-        return ElementFilter.typesIn(roundEnvironment.getRootElements())
+        status = ElementFilter.typesIn(roundEnvironment.getRootElements())
                 .stream()
                 .map(Object::toString)
                 .map(elementUtils::getTypeElement)
@@ -33,6 +35,13 @@ public class MethodNameProcessor extends AbstractSubProcessor {
                 .collect(Collectors.toList()) // Weird bug happens if I don't collect into a List here:
                 .stream()                     // Only the methods of the first encountered class are processed.
                 .allMatch(b -> b);
+
+        return statusBasedPayload();
+    }
+
+    @Override
+    protected String getSuccessMessage() {
+        return "All methods are well named.";
     }
 
     private boolean checkThatMethodNameIsCapitalized(ExecutableElement methodElement) {
@@ -42,12 +51,9 @@ public class MethodNameProcessor extends AbstractSubProcessor {
                     Character.toLowerCase(methodName.charAt(0)) + methodName.substring(1);
             String errorMessage = String.format("The method '%s' should be named '%s'.",
                     methodName, appropriateMethodName);
-            processingEnvironment.getMessager().printMessage(
-                    Diagnostic.Kind.NOTE, errorMessage, methodElement);
-
+            failureSubjects.add(new FailureSubject(methodElement, errorMessage));
             return false;
         }
-
         return true;
     }
 }

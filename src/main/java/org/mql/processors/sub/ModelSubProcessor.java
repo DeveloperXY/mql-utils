@@ -1,10 +1,12 @@
 package org.mql.processors.sub;
 
+import org.mql.processors.models.FailureSubject;
+import org.mql.processors.models.Payload;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 import java.util.Set;
 
@@ -24,17 +26,22 @@ public class ModelSubProcessor extends AbstractSubProcessor {
     }
 
     @Override
-    public boolean run() {
+    public Payload run() {
         Set<? extends Element> annotatedElements = roundEnvironment.getElementsAnnotatedWith(modelElement);
-        if (annotatedElements.size() == 0) {
-            processingEnvironment.getMessager().printMessage(Diagnostic.Kind.NOTE, "No @Model classes found.");
-            return false;
-        }
+        if (annotatedElements.size() == 0)
+            return new Payload(false, "No @Model classes found.");
 
-        return roundEnvironment.getElementsAnnotatedWith(modelElement)
+        status = roundEnvironment.getElementsAnnotatedWith(modelElement)
                 .stream()
                 .map(element -> ((TypeElement) element))
                 .allMatch(this::isModelClassWellPackaged);
+
+        return statusBasedPayload();
+    }
+
+    @Override
+    protected String getSuccessMessage() {
+        return "All model classes are well-packaged.";
     }
 
     /**
@@ -74,7 +81,7 @@ public class ModelSubProcessor extends AbstractSubProcessor {
         }
 
         if (!isWellPackaged)
-            processingEnvironment.getMessager().printMessage(Diagnostic.Kind.NOTE, errorMessage, annotatedClass);
+            failureSubjects.add(new FailureSubject(annotatedClass, errorMessage));
 
         return isWellPackaged;
     }

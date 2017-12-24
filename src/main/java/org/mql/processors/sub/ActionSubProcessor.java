@@ -15,4 +15,9 @@ public class ActionSubProcessor extends SuffixProcessor {
         super(processingEnvironment, roundEnvironment,
                 processingEnvironment.getElementUtils().getTypeElement(Annotations.ACTION));
     }
+
+    @Override
+    public String getSuccessMessage() {
+        return "All action classes are well named.";
+    }
 }
