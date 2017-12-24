@@ -22,16 +22,15 @@ public class ClassNameProcessor extends AbstractSubProcessor {
     public Payload run() {
         // The root elements will contain a package definition, due to the presence of a package-info.java file
         // We just need the class
-        status = ElementFilter.typesIn(roundEnvironment.getRootElements())
-                .stream()
-                .map(Object::toString)
-                .map(elementUtils::getTypeElement)
-                .map(this::checkThatClassNameIsCapitalized)
-                .collect(Collectors.toList()) // Weird bug happens if I don't collect into a List here:
-                .stream()                     // Only the first encountered class is processed.
-                .allMatch(b -> b); // calling map() then allMatch instead of AllMatch alone to process all class names
-
-        return statusBasedPayload();
+        return calculatePayload(() ->
+                ElementFilter.typesIn(roundEnvironment.getRootElements())
+                        .stream()
+                        .map(Object::toString)
+                        .map(elementUtils::getTypeElement)
+                        .map(this::checkThatClassNameIsCapitalized)
+                        .collect(Collectors.toList()) // Weird bug happens if I don't collect into a List here:
+                        .stream()                     // Only the first encountered class is processed.
+                        .allMatch(b -> b)); // calling map() then allMatch instead of AllMatch alone to process all class names
     }
 
     @Override

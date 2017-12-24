@@ -24,19 +24,18 @@ public class MethodNameProcessor extends AbstractSubProcessor {
     public Payload run() {
         // The root elements will contain a package definition, due to the presence of a package-info.java file
         // We just need the class elements
-        status = ElementFilter.typesIn(roundEnvironment.getRootElements())
-                .stream()
-                .map(Object::toString)
-                .map(elementUtils::getTypeElement)
-                .map(TypeElement::getEnclosedElements)
-                .map(ElementFilter::methodsIn)
-                .flatMap(Collection::stream)
-                .map(this::checkThatMethodNameIsCapitalized)
-                .collect(Collectors.toList()) // Weird bug happens if I don't collect into a List here:
-                .stream()                     // Only the methods of the first encountered class are processed.
-                .allMatch(b -> b);
-
-        return statusBasedPayload();
+        return calculatePayload(() ->
+                ElementFilter.typesIn(roundEnvironment.getRootElements())
+                        .stream()
+                        .map(Object::toString)
+                        .map(elementUtils::getTypeElement)
+                        .map(TypeElement::getEnclosedElements)
+                        .map(ElementFilter::methodsIn)
+                        .flatMap(Collection::stream)
+                        .map(this::checkThatMethodNameIsCapitalized)
+                        .collect(Collectors.toList()) // Weird bug happens if I don't collect into a List here:
+                        .stream()                     // Only the methods of the first encountered class are processed.
+                        .allMatch(b -> b));
     }
 
     @Override

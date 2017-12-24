@@ -7,7 +7,6 @@ import org.mql.utils.Annotations;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.*;
-import javax.tools.Diagnostic;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -51,14 +50,12 @@ public abstract class SuffixProcessor extends AbstractSubProcessor {
 
     @Override
     public Payload run() {
-        status = roundEnvironment.getElementsAnnotatedWith(constructAnnotation)
+        return calculatePayload(() -> roundEnvironment.getElementsAnnotatedWith(constructAnnotation)
                 .stream()
                 .map(this::checkThatClassIsAppropriatelySuffixed)
                 .collect(Collectors.toList())
                 .stream()
-                .allMatch(result -> result);
-
-        return statusBasedPayload();
+                .allMatch(result -> result));
     }
 
     /**

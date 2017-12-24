@@ -8,6 +8,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.util.Elements;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * @author Mohammed Aouf ZOUAG, on 12/13/2017
@@ -45,6 +46,11 @@ public abstract class AbstractSubProcessor implements SubProcessor {
 
     public boolean getStatus() {
         return status;
+    }
+
+    public Payload calculatePayload(Supplier<Boolean> resultSupplier) {
+        status = resultSupplier.get();
+        return statusBasedPayload();
     }
 
     public Payload statusBasedPayload() {

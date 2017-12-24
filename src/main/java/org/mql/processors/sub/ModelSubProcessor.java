@@ -7,7 +7,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic;
 import java.util.Set;
 
 /**
@@ -31,12 +30,10 @@ public class ModelSubProcessor extends AbstractSubProcessor {
         if (annotatedElements.size() == 0)
             return new Payload(false, "No @Model classes found.");
 
-        status = roundEnvironment.getElementsAnnotatedWith(modelElement)
+        return calculatePayload(() -> roundEnvironment.getElementsAnnotatedWith(modelElement)
                 .stream()
                 .map(element -> ((TypeElement) element))
-                .allMatch(this::isModelClassWellPackaged);
-
-        return statusBasedPayload();
+                .allMatch(this::isModelClassWellPackaged));
     }
 
     @Override
