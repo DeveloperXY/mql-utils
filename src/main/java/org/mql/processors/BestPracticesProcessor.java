@@ -87,8 +87,7 @@ public class BestPracticesProcessor extends AbstractProcessor {
         else {
             sj.add("").add("-------------- WHAT'S WRONG --------------");
             displayMessage(sj.toString());
-            payloadMap.get(false)
-                    .stream()
+            failedPayloads.stream()
                     .map(Payload::getFailureSubjects)
                     .flatMap(Collection::stream)
                     .forEach(subject -> displayMessageWithElement(subject.getMessage(), subject.getElement()));
