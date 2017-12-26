@@ -66,6 +66,7 @@ public class BestPracticesProcessor extends AbstractProcessor {
                 new ClassNameProcessor(processingEnv, roundEnv),
                 new MethodNameProcessor(processingEnv, roundEnv),
                 new ActionSubProcessor(processingEnv, roundEnv),
+                new DaoSubProcessor(processingEnv, roundEnv),
                 new ServiceSubProcessor(processingEnv, roundEnv))
                 .map(AbstractSubProcessor::run)
                 .collect(partitioningBy(Payload::getStatus));
