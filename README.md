@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/DeveloperXY/mql-utils.svg?branch=master)](https://travis-ci.org/DeveloperXY/mql-utils)
 
 # mql-utils 
-A Java library that offers compile-time checking for the best practices taught by Mr. Noureddine CHENFOUR.
+A Java library that offers compile-time checking for the best practices taught by Mr. Noureddine CHENFOUR, in addition to other utility classes & annotations.
 
 # How to use
 
