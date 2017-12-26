@@ -8,7 +8,7 @@ A Java library that offers compile-time checking for the best practices taught b
 1. Create a `package-info.java` file anywhere in your project
 2. Annotate the package declaration with the `@CheckForBestPractices` annotation, which is required to trigger the checks. This will result into a basic class names' checking, but you can further customize the process using the API's annotations.
 
-# Annotations to customize the best practices' checks:
+# To customize the best practices' checks:
 
 `@Action`,
 `@Model`,
@@ -16,6 +16,6 @@ A Java library that offers compile-time checking for the best practices taught b
 `@Service`,
 `@NameSuffixedWith`
 
-# Annotations to generate code:
+# To generate code:
 
 `@ActionRequired`
