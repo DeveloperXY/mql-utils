@@ -46,6 +46,7 @@ public class BestPracticesProcessor extends AbstractProcessor {
             MessagerUtils.init(processingEnv);
 
             if (checksAreEnabled(roundEnv)) {
+                /* TODO: handle the case where a sub processor cannot find annotations to process in the 1st place */
                 runSubProcessors();
 
                 // All annotations were processed
@@ -76,10 +77,14 @@ public class BestPracticesProcessor extends AbstractProcessor {
                 .add("Verifying MQL's best practices...")
                 .add("")
                 .add("-------------- SUCCESSFUL CHECKS --------------");
-        payloadMap.get(true)
-                .stream()
-                .map(Payload::getSuccessMessage)
-                .forEach(sj::add);
+        List<Payload> successfulPayloads = payloadMap.get(true);
+        if (successfulPayloads.size() == 0)
+            sj.add("NONE");
+        else {
+            successfulPayloads.stream()
+                    .map(Payload::getSuccessMessage)
+                    .forEach(sj::add);
+        }
         // Process the payloads of the sub processors that encountered a best practices violation
         List<Payload> failedPayloads = payloadMap.get(false);
         if (failedPayloads.size() == 0) {
